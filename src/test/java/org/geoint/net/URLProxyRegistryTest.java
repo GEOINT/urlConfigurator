@@ -29,7 +29,7 @@ import org.junit.BeforeClass;
  *
  * @author steve_siebert
  */
-public class URLContextStreamHandlerFactoryTest {
+public class URLProxyRegistryTest {
 
     @Test
     public void testRegisterJreHandlers() throws Exception {
@@ -37,7 +37,7 @@ public class URLContextStreamHandlerFactoryTest {
         if (!SunJreProtocolHandlers.isJreHandlersAvailable()) {
             fail("Unable to test, no handlers available");
         }
-        URLContextStreamHandlerFactory shf = new URLContextStreamHandlerFactory();
+        URLProtocolRegistry shf = new URLProtocolRegistry();
         SunJreProtocolHandlers.registerJreHandlers(shf);
 
         assertTrue(Objects.nonNull(shf.createURLStreamHandler("http")));
@@ -49,7 +49,7 @@ public class URLContextStreamHandlerFactoryTest {
         if (!SunJreProtocolHandlers.isJreHandlersAvailable()) {
             fail("Unable to test, no handlers available");
         }
-        URLContextStreamHandlerFactory shf = new URLContextStreamHandlerFactory();
+        URLProtocolRegistry shf = new URLProtocolRegistry();
         SunJreProtocolHandlers.registerJreHandlers(shf);
 
         CountingInitializer init = new CountingInitializer();
@@ -69,7 +69,7 @@ public class URLContextStreamHandlerFactoryTest {
 
     @Test
     public void testJvmRegistration() throws Exception {
-        URLContextStreamHandlerFactory shf = new URLContextStreamHandlerFactory();
+        URLProtocolRegistry shf = new URLProtocolRegistry();
         shf.registerWithJvm();
 
         CountingInitializer init = new CountingInitializer();

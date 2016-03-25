@@ -36,41 +36,41 @@ import java.util.logging.Logger;
 
 /**
  * URLStreamHandlerFactory instance which may be used programmatically or may
- * optionally be
- * {@link URLContextStreamHandlerFactory#registerWithJvm() registered} as the
+ * optionally be {@link URLProtocolRegistry#registerWithJvm() registered} as the
  * default stream handler factory for the JVM.
  *
  * @see URL#setURLStreamHandlerFactory(java.net.URLStreamHandlerFactory)
  * @author steve_siebert
  */
-public class URLContextStreamHandlerFactory implements URLStreamHandlerFactory {
-
+public class URLProtocolRegistry {
 
     private final Map<String, URLContextStreamHandler> streamHandlers; //key=protocol
     //TODO replace with a more sophisticated way to filter initializers (ie tree)
     private final Set<URLContextConnectionInitializer> initializers;
 
     private static final Logger LOGGER
-            = Logger.getLogger(URLContextStreamHandlerFactory.class.getName());
+            = Logger.getLogger(URLProtocolRegistry.class.getName());
 
-    public URLContextStreamHandlerFactory() {
+    public URLProtocolRegistry() {
         streamHandlers = new HashMap<>();
         initializers = new LinkedHashSet<>();
     }
 
     /**
-     * Register this as the JVM "default" StreamHandlerFactory used by URL to 
+     * Register this as the JVM "default" StreamHandlerFactory used by URL to
      * create URLConnection instances.
-     * 
+     *
      * @see URL#setURLStreamHandlerFactory(URLStreamHandlerFactory)
      * @throws Error if the application has already set a factory.
      * @throws SecurityException if a security manager exists and its
      * checkSetFactory method doesn't allow the operation.
      */
-    public void registerWithJvm() throws Error, SecurityException {
-        //TODO register a proxy so that different instances can be swapped out, 
-        //     eliminating the JVM requirement of "at most once" registration
-        URL.setURLStreamHandlerFactory(this);
+    public synchronized void registerWithJvm() throws Error, SecurityException {
+        boolean register = ProtocolRegistryStreamHandlerFactory.INSTANCE.registry == null;
+        ProtocolRegistryStreamHandlerFactory.INSTANCE.registry = this;
+        if (register) {
+            URL.setURLStreamHandlerFactory(ProtocolRegistryStreamHandlerFactory.INSTANCE);
+        }
     }
 
     /**
@@ -205,7 +205,6 @@ public class URLContextStreamHandlerFactory implements URLStreamHandlerFactory {
      * @return stream handler which resolves actual URLStreamHandler from URL
      * context
      */
-    @Override
     public URLStreamHandler createURLStreamHandler(String protocol) {
         return (streamHandlers.containsKey(protocol))
                 ? streamHandlers.get(protocol)
@@ -345,6 +344,25 @@ public class URLContextStreamHandlerFactory implements URLStreamHandlerFactory {
                     throw new IOException(msg, ex);
                 }
             }
+        }
+
+    }
+
+    /**
+     * Proxy StreamHandlerFactory allowing different instances of
+     * ProtocolRegistry to be swapped out at runtime, sidestepping the JVM
+     * limitation of registering at most one StreamHandlerFactory for the life
+     * of the JVM.
+     */
+    private enum ProtocolRegistryStreamHandlerFactory implements URLStreamHandlerFactory {
+
+        INSTANCE;
+
+        private volatile URLProtocolRegistry registry;
+
+        @Override
+        public URLStreamHandler createURLStreamHandler(String protocol) {
+            return registry.createURLStreamHandler(protocol);
         }
 
     }

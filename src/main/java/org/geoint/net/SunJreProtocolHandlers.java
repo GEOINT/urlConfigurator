@@ -47,7 +47,7 @@ public class SunJreProtocolHandlers {
         return true;
     }
 
-    public static void registerJreHandlers(URLContextStreamHandlerFactory shf) {
+    public static void registerJreHandlers(URLProtocolRegistry shf) {
 
         //TODO make this dynamic if at all possible
         Arrays.stream(JRE_HANDLERS)
