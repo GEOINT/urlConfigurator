@@ -17,8 +17,6 @@ package org.geoint.net;
 
 import java.net.URLStreamHandler;
 import java.util.Arrays;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 /**
  * Utility class providing convenience for those using the sun/oracle/openjdk
