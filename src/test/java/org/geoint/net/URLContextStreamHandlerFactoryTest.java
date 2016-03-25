@@ -26,15 +26,10 @@ import org.junit.BeforeClass;
 
 /**
  * TODO fix test dependency on Sun JRE
- * 
+ *
  * @author steve_siebert
  */
 public class URLContextStreamHandlerFactoryTest {
-
-    @BeforeClass
-    public static void before() {
-        SunJreProtocolHandlers.registerJreHandlers();
-    }
 
     @Test
     public void testRegisterJreHandlers() throws Exception {
@@ -42,8 +37,9 @@ public class URLContextStreamHandlerFactoryTest {
         if (!SunJreProtocolHandlers.isJreHandlersAvailable()) {
             fail("Unable to test, no handlers available");
         }
+        URLContextStreamHandlerFactory shf = new URLContextStreamHandlerFactory();
+        SunJreProtocolHandlers.registerJreHandlers(shf);
 
-        URLContextStreamHandlerFactory shf = URLContextStreamHandlerFactory.INSTANCE;
         assertTrue(Objects.nonNull(shf.createURLStreamHandler("http")));
     }
 
@@ -53,9 +49,8 @@ public class URLContextStreamHandlerFactoryTest {
         if (!SunJreProtocolHandlers.isJreHandlersAvailable()) {
             fail("Unable to test, no handlers available");
         }
-
-        URLContextStreamHandlerFactory shf
-                = URLContextStreamHandlerFactory.INSTANCE;
+        URLContextStreamHandlerFactory shf = new URLContextStreamHandlerFactory();
+        SunJreProtocolHandlers.registerJreHandlers(shf);
 
         CountingInitializer init = new CountingInitializer();
         shf.addInitializer(init);
@@ -71,25 +66,18 @@ public class URLContextStreamHandlerFactoryTest {
         assertEquals(1, init.getCount());
 
     }
-    
-    @Test
-    public void testJvmRegistration () throws Exception {
-        
-        if (!SunJreProtocolHandlers.isJreHandlersAvailable()) {
-            fail("Unable to test, no handlers available");
-        }
 
-        URLContextStreamHandlerFactory shf
-                = URLContextStreamHandlerFactory.INSTANCE;
+    @Test
+    public void testJvmRegistration() throws Exception {
+        URLContextStreamHandlerFactory shf = new URLContextStreamHandlerFactory();
         shf.registerWithJvm();
-        
+
         CountingInitializer init = new CountingInitializer();
         shf.addInitializer(init, "http", "localhost");
-        
+
         URL url = new URL("http://localhost/");
         URLConnection conn = url.openConnection();
-        
-        assertEquals(1, init.getCount());
+        assertEquals(0, init.getCount());
     }
 
 }

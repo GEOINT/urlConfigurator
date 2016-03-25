@@ -43,9 +43,8 @@ import java.util.logging.Logger;
  * @see URL#setURLStreamHandlerFactory(java.net.URLStreamHandlerFactory)
  * @author steve_siebert
  */
-public enum URLContextStreamHandlerFactory implements URLStreamHandlerFactory {
+public class URLContextStreamHandlerFactory implements URLStreamHandlerFactory {
 
-    INSTANCE;
 
     private final Map<String, URLContextStreamHandler> streamHandlers; //key=protocol
     //TODO replace with a more sophisticated way to filter initializers (ie tree)
@@ -54,20 +53,23 @@ public enum URLContextStreamHandlerFactory implements URLStreamHandlerFactory {
     private static final Logger LOGGER
             = Logger.getLogger(URLContextStreamHandlerFactory.class.getName());
 
-    private URLContextStreamHandlerFactory() {
+    public URLContextStreamHandlerFactory() {
         streamHandlers = new HashMap<>();
         initializers = new LinkedHashSet<>();
     }
 
     /**
-     * Register this as the JVM StreamHandlerFactory.
-     *
+     * Register this as the JVM "default" StreamHandlerFactory used by URL to 
+     * create URLConnection instances.
+     * 
      * @see URL#setURLStreamHandlerFactory(URLStreamHandlerFactory)
      * @throws Error if the application has already set a factory.
      * @throws SecurityException if a security manager exists and its
      * checkSetFactory method doesn't allow the operation.
      */
     public void registerWithJvm() throws Error, SecurityException {
+        //TODO register a proxy so that different instances can be swapped out, 
+        //     eliminating the JVM requirement of "at most once" registration
         URL.setURLStreamHandlerFactory(this);
     }
 
