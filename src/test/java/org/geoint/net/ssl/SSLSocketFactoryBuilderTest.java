@@ -17,12 +17,12 @@ package org.geoint.net.ssl;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.security.GeneralSecurityException;
 import java.security.cert.X509Certificate;
 import javax.net.ssl.HandshakeCompletedEvent;
 import javax.net.ssl.HandshakeCompletedListener;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLPeerUnverifiedException;
 import javax.net.ssl.SSLServerSocket;
 import javax.net.ssl.SSLServerSocketFactory;
@@ -36,14 +36,6 @@ import static org.junit.Assert.*;
  * @author steve_siebert
  */
 public class SSLSocketFactoryBuilderTest {
-
-    //TODO create the certificates programmatically
-    private static final char[] STORE_PASS = "changeit".toCharArray();
-    private static final String CLIENT_STORE_NAME = "client.jks";
-    private static final String CLIENT_ALIAS = "client";
-    private static final String SERVER_STORE_NAME = "server.jks";
-    private static final String SERVER_ALIAS = "server";
-    private static final String TRUST_STORE_NAME = "truststore.jks";
 
     /**
      * Test mutual SSL mutual authentication where the client certificate is
@@ -70,14 +62,12 @@ public class SSLSocketFactoryBuilderTest {
         //test client
         SSLSocket socket = null;
         try {
-            SSLSocketFactory clientSSF = SSLContextBuilder.buildFactory()
-                    .useJksKeyStore(getTestKeyStoreStream(CLIENT_STORE_NAME), STORE_PASS)
-                    .useCertificate(CLIENT_ALIAS, STORE_PASS)
-                    .useJksTrustStore(getTestKeyStoreStream(TRUST_STORE_NAME), STORE_PASS)
-                    .build();
+            SSLSocketFactory clientSSF
+                    = TestKeyStore.getDefaultMutualAuthClientConfig(
+                            SSLContext::getSocketFactory);
             socket = (SSLSocket) clientSSF.createSocket("localhost", serverPort);
             socket.setUseClientMode(true);
-            
+
             socket.addHandshakeCompletedListener(clientCertListener);
             socket.startHandshake();
 
@@ -101,11 +91,6 @@ public class SSLSocketFactoryBuilderTest {
         }
     }
 
-    private InputStream getTestKeyStoreStream(String keystoreName) {
-        return SSLSocketFactoryBuilderTest.class.getClassLoader()
-                .getResourceAsStream("ssl/" + keystoreName);
-    }
-
     /**
      * Simple SSL server requiring mutual authentication
      */
@@ -120,11 +105,8 @@ public class SSLSocketFactoryBuilderTest {
                 throws IOException, GeneralSecurityException {
             this.port = port;
             this.listener = listener;
-            this.ssf = SSLContextBuilder.buildServerFactory()
-                    .useJksKeyStore(getTestKeyStoreStream(SERVER_STORE_NAME), STORE_PASS)
-                    .useCertificate(SERVER_ALIAS)
-                    .useJksTrustStore(getTestKeyStoreStream(TRUST_STORE_NAME), STORE_PASS)
-                    .build();
+            this.ssf = TestKeyStore.getDefaultServerConfig(
+                    SSLContext::getServerSocketFactory);
         }
 
         @Override
