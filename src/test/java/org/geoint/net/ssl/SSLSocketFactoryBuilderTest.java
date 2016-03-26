@@ -39,11 +39,11 @@ public class SSLSocketFactoryBuilderTest {
 
     //TODO create the certificates programmatically
     private static final char[] STORE_PASS = "changeit".toCharArray();
-    private static final String CLIENT_STORE_NAME = "testClient.jks";
-    private static final String CLIENT_ALIAS = "testClientAlias";
-    private static final String SERVER_STORE_NAME = "testServer.jks";
-    private static final String SERVER_ALIAS = "testServerAlias";
-    private static final String TRUST_STORE_NAME = "ca.jks";
+    private static final String CLIENT_STORE_NAME = "client.jks";
+    private static final String CLIENT_ALIAS = "client";
+    private static final String SERVER_STORE_NAME = "server.jks";
+    private static final String SERVER_ALIAS = "server";
+    private static final String TRUST_STORE_NAME = "truststore.jks";
 
     /**
      * Test mutual SSL mutual authentication where the client certificate is
@@ -84,8 +84,6 @@ public class SSLSocketFactoryBuilderTest {
             while (clientCertListener.cert == null) {
                 Thread.sleep(10);
             }
-
-            System.out.println("here");
 
             assertTrue(serverCertListener.cert != null);
         } catch (IOException ex) {
@@ -174,7 +172,7 @@ public class SSLSocketFactoryBuilderTest {
             try {
                 cert = (X509Certificate) event.getPeerCertificates()[0];
             } catch (SSLPeerUnverifiedException ex) {
-                throw new RuntimeException("Unable to get client certificate.", ex);
+                throw new RuntimeException("Unable to get certificate.", ex);
             }
         }
     }

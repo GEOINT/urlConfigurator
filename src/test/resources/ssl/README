@@ -1,7 +1,0 @@
-test cerficates setup as follows:
- - all certificates and stores use the password 'changeit'
- - 'ca' in 'ca.jks' is signed by 'root'
- - 'testserveralias' in 'testServer.jks' is signed by ca
- - 'testclientalias' in 'testClient.jks' is signed by ca
-
-use ca.jks as the trust store for both client and server
