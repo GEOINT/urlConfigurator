@@ -20,6 +20,7 @@ import java.net.CookieManager;
 import java.net.URLConnection;
 import java.util.logging.Logger;
 import javax.net.ssl.HttpsURLConnection;
+import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import org.geoint.net.URLConnectionInitializationException;
 import org.geoint.net.URLConnectionInitializer;
@@ -45,6 +46,10 @@ public class HttpsMutualAuthInitializer implements URLConnectionInitializer {
     private static final Logger LOGGER
             = Logger.getLogger(HttpsMutualAuthInitializer.class.getName());
 
+    public HttpsMutualAuthInitializer(SSLContext context) {
+        this(context.getSocketFactory());
+    }
+
     public HttpsMutualAuthInitializer(SSLSocketFactory sslSocketFactory) {
         this.sslSocketFactory = sslSocketFactory;
         if (CookieHandler.getDefault() == null) {
@@ -55,11 +60,10 @@ public class HttpsMutualAuthInitializer implements URLConnectionInitializer {
     /**
      * Fluid API to construct a SSLSocketFactory used by this initializer.
      *
-     * @return builder
+     * @return builder initializer ssl configuration
      */
-    public static SSLContextBuilder builder() {
-        return SSLContextBuilder.onBuild(
-                (c) -> new HttpsMutualAuthInitializer(c.getSocketFactory()));
+    public static SSLContextBuilder<HttpsMutualAuthInitializer> builder() {
+        return SSLContextBuilder.onBuild(HttpsMutualAuthInitializer::new);
     }
 
     @Override
