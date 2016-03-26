@@ -161,6 +161,24 @@ public class URLProtocolRegistry {
 
     /**
      * Adds a URLConnection initializer that will be called for all URLs with
+     * the specified protocol, hostname, and port.
+     *
+     * @param initializer initializer
+     * @param protocol protocol defined by the URL
+     * @param hostname hostname defined by the URL
+     * @param port port defined by the URL
+     */
+    public void addInitializer(URLConnectionInitializer initializer,
+            String protocol, String hostname, int port) {
+        addInitializer(initializer,
+                (u) -> u.getProtocol().equalsIgnoreCase(protocol.toLowerCase())
+                && u.getHost().equalsIgnoreCase(hostname)
+                && u.getPort() == port
+        );
+    }
+
+    /**
+     * Adds a URLConnection initializer that will be called for all URLs with
      * the specified protocol, hostname, and is or exists under the provided
      * relative path.
      *
@@ -175,6 +193,27 @@ public class URLProtocolRegistry {
                 (u) -> u.getProtocol().equalsIgnoreCase(protocol.toLowerCase())
                 && u.getHost().equalsIgnoreCase(hostname)
                 && u.getPath().startsWith(path));
+    }
+
+    /**
+     * Adds a URLConnection initializer that will be called for all URLs with
+     * the specified protocol, hostname, and port, and is or exists under the
+     * provided relative path.
+     *
+     * @param initializer initializer
+     * @param protocol protocol defined by the URL
+     * @param hostname hostname defined by the URL
+     * @param port port defined by the URL
+     * @param path relative path
+     */
+    public void addInitializer(URLConnectionInitializer initializer,
+            String protocol, String hostname, int port, String path) {
+        addInitializer(initializer,
+                (u) -> u.getProtocol().equalsIgnoreCase(protocol.toLowerCase())
+                && u.getHost().equalsIgnoreCase(hostname)
+                && u.getPort() == port
+                && u.getPath().startsWith(path)
+        );
     }
 
     /**
@@ -256,7 +295,8 @@ public class URLProtocolRegistry {
             URLStreamHandler h = handlerSupplier.get();
             try {
                 Method delegateMethod = h.getClass()
-                        .getMethod("openConnection", URL.class);
+                        .getDeclaredMethod("openConnection", URL.class);
+                delegateMethod.setAccessible(true);
                 URLConnection conn
                         = (URLConnection) delegateMethod.invoke(h, u);
                 initialize(conn);
@@ -276,7 +316,8 @@ public class URLProtocolRegistry {
             URLStreamHandler h = handlerSupplier.get();
             try {
                 Method delegateMethod = h.getClass()
-                        .getMethod("openConnection", URL.class, Proxy.class);
+                        .getDeclaredMethod("openConnection", URL.class, Proxy.class);
+                delegateMethod.setAccessible(true);
                 URLConnection conn
                         = (URLConnection) delegateMethod.invoke(h, u, p);
                 initialize(conn);
