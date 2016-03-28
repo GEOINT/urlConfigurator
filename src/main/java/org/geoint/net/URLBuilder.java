@@ -124,7 +124,11 @@ public class URLBuilder {
      * @return this builder (fluid interface)
      */
     public URLBuilder withPath(String path) {
-        return withPath(PATH_SPLITTER.split(path));
+        if (path != null) {
+            return withPath(PATH_SPLITTER.split(path));
+        }
+        this.path.clear();
+        return this;
     }
 
     /**
@@ -166,6 +170,9 @@ public class URLBuilder {
 
     protected void parseQuery(String query,
             BiConsumer<String, String> paramConsumer) {
+        if (query == null) {
+            return;
+        }
         Arrays.stream(QUERY_SPLITTER.split(query))
                 .map(PARAM_SPLITTER::split)
                 .forEach((p) -> paramConsumer.accept(p[0], p[1]));
