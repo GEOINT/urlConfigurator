@@ -25,6 +25,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiConsumer;
@@ -41,8 +42,8 @@ public class URLBuilder {
     private String protocol;
     private String host;
     private Integer port;
-    private List<String> path;
-    private List<Parameter> params;
+    private List<String> path = new LinkedList();
+    private List<Parameter> params = new LinkedList();
     private String ref;
     private String userInfo;
 
@@ -57,6 +58,10 @@ public class URLBuilder {
             = Pattern.compile(PARAM_SEPARATOR, Pattern.LITERAL);
 
     public URLBuilder() {
+    }
+
+    public URLBuilder(String baseUrl) throws MalformedURLException {
+        this(new URL(baseUrl));
     }
 
     public URLBuilder(URL baseUrl) {
@@ -239,10 +244,16 @@ public class URLBuilder {
         return new URI(protocol,
                 userInfo,
                 host,
-                (port == null) ? port : -1,
-                String.join(PATH_SEPARATOR, path),
-                this.params.stream().map(Parameter::toString)
-                .collect(Collectors.joining(QUERY_SEPARATOR)),
+                (port == null)
+                        ? port
+                        : -1,
+                (path.isEmpty())
+                        ? null
+                        : String.join(PATH_SEPARATOR, path),
+                (params.isEmpty())
+                        ? null
+                        : params.stream().map(Parameter::toString)
+                        .collect(Collectors.joining(QUERY_SEPARATOR)),
                 ref);
     }
 
